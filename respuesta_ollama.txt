@@ -1,0 +1,26 @@
+Pregunta: s
+Respuesta:
+Parece que has ingresado una respuesta vacía. ¿Podrías proporcionar una pregunta
+clara y concisa para que pueda ayudarte de manera efectiva? Estoy aquí para
+ayudarte con cualquier pregunta o tema que desees abordar. ¡Adelante!
+================================================================================
+Pregunta: como te llamas?
+Respuesta:
+Me llamo Meta Llama. Soy un modelo de lenguaje grande diseñado para proporcionar
+respuestas precisas y útiles a tus preguntas. ¿En qué puedo ayudarte hoy?
+================================================================================
+Pregunta: cual es el lugar mas frio del planeta
+Respuesta:
+El lugar más frío del planeta es el Océano Antártico. Es un mar rodeado de
+continentes y se encuentra en el hemisferio sur, a una latitud entre 66°30’S y
+90°S. La temperatura promedio del Océano Antártico es de aproximadamente -1,8°C,
+aunque puede caer hasta -50°C en invierno y llegar a 0°C en verano.
+
+En particular, el punto más frío registrado en la Tierra fue en 2007, en una
+estación científica llamada Vostok Station, ubicada en el corazón del Océano
+Antártico. La temperatura en ese día alcanzó un récord de -89,2°C.
+
+Es importante destacar que aunque el Océano Antártico es el lugar más frío del
+planeta, hay otras regiones, como las montañas de Alaska y Canadá, que también
+pueden ser muy frías durante el invierno.
+================================================================================

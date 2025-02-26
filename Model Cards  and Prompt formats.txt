@@ -1,0 +1,179 @@
+Model Cards & Prompt formats
+Llama 3.2
+Introduction
+This page covers capabilities and guidance specific to the models released with Llama 3.2: The Llama 3.2 lightweight models (1B/3B) and the Llama 3.2 multimodal models (11B/90B).
+Llama 3.2 Lightweight Models (1B/3B)
+Model Card (1B/3B)
+For comprehensive technical information about the Llama 3.2 collection of Lightweight models, please see the official model card, located on GitHub.
+Inference with lightweight models
+The recommended way to run inference for these lightweight models on-device is using the PyTorch ExecuTorch framework. ExecuTorch is an end-to-end solution for enabling on-device inference capabilities across mobile and edge devices including wearables, embedded devices and microcontrollers. It is part of the PyTorch Edge ecosystem and enables efficient deployment of various PyTorch models (vision, speech, Generative AI, and more) to edge devices.
+To support our lightweight model launches, ExecuTorch is now supporting BFloat16 with the XNNPack backend in both Android and iOS, please check out our repository on Github for more technical details as well as end-to-end tutorials.
+The weights being released today are based on BFloat16 numerics. Our teams are actively exploring quantized variants that will run even faster and we hope to share more on that soon.
+
+Prompt Template
+The lightweight models share many characteristics with the Llama 3.1 text-only models. For information that is applicable across both sets of models, see the following sections on the Llama 3.1 page.
+
+Special Tokens
+Supported Roles
+Llama 3.1 Pretrained
+Llama 3.1 Instruct
+Code Interpreter
+Tool Calling (1B/3B)
+Tool-calling with the lightweight models can be done in 2 ways:
+
+Pass the function definitions in the system prompt + pass the query in the user prompt
+Pass the function definitions and query in the user prompt
+Note: Unlike the Llama 3.1 larger Models (8B/70B/405B), the lightweight models do not support built-in tools (Brave Search and Wolfram). The lightweight models only support custom functions defined in either the system prompt or user prompt. This decision was made to simplify the user experience of tool-calling with our lightweight models.
+Function definitions in the system prompt
+Set the function definitions
+
+function_definitions = """[
+    {
+        "name": "get_user_info",
+        "description": "Retrieve details for a specific user by their unique identifier. Note that the provided function is in Python 3 syntax.",
+        "parameters": {
+            "type": "dict",
+            "required": [
+                "user_id"
+            ],
+            "properties": {
+                "user_id": {
+                "type": "integer",
+                "description": "The unique identifier of the user. It is used to fetch the specific user details from the database."
+            },
+            "special": {
+                "type": "string",
+                "description": "Any special information or parameters that need to be considered while fetching user details.",
+                "default": "none"
+                }
+            }
+        }
+    }
+]
+"""
+Set the default system prompt
+
+
+system_prompt = """You are an expert in composing functions. You are given a question and a set of possible functions. 
+Based on the question, you will need to make one or more function/tool calls to achieve the purpose. 
+If none of the function can be used, point it out. If the given question lacks the parameters required by the function,
+also point it out. You should only return the function call in tools call sections.
+
+If you decide to invoke any of the function(s), you MUST put it in the format of [func_name1(params_name1=params_value1, params_name2=params_value2...), func_name2(params)]\n
+You SHOULD NOT include any other text in the response.
+
+Here is a list of functions in JSON format that you can invoke.\n\n{functions}\n""".format(functions=function_definitions)
+Set the user query
+
+query = "Can you retrieve the details for the user with the ID 7890, who has black as their special request?"
+With the above function definition, system prompt and user query, the input to the LLM looks like:
+
+<|start_header_id|>system<|end_header_id|>
+You are an expert in composing functions. You are given a question and a set of possible functions. 
+Based on the question, you will need to make one or more function/tool calls to achieve the purpose. 
+If none of the functions can be used, point it out. If the given question lacks the parameters required by the function,also point it out. You should only return the function call in tools call sections.
+If you decide to invoke any of the function(s), you MUST put it in the format of [func_name1(params_name1=params_value1, params_name2=params_value2...), func_name2(params)]
+You SHOULD NOT include any other text in the response.
+Here is a list of functions in JSON format that you can invoke.[
+    {
+        "name": "get_user_info",
+        "description": "Retrieve details for a specific user by their unique identifier. Note that the provided function is in Python 3 syntax.",
+        "parameters": {
+            "type": "dict",
+            "required": [
+                "user_id"
+            ],
+            "properties": {
+                "user_id": {
+                "type": "integer",
+                "description": "The unique identifier of the user. It is used to fetch the specific user details from the database."
+            },
+            "special": {
+                "type": "string",
+                "description": "Any special information or parameters that need to be considered while fetching user details.",
+                "default": "none"
+                }
+            }
+        }
+    }
+]
+<|eot_id|><|start_header_id|>user<|end_header_id|>
+
+Can you retrieve the details for the user with the ID 7890, who has black as their special request?<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+And the model responds with the function call that can fulfill the user’s query:
+
+[get_user_info(user_id=7890, special='black')]<|eot_id|>
+Function definitions and query in the user prompt
+You could pass everything in the user prompt as well:
+
+<|begin_of_text|><|start_header_id|>user<|end_header_id|>
+Questions: Can you retrieve the details for the user with the ID 7890, who has black as their special request?
+Here is a list of functions in JSON format that you can invoke:
+[
+    {
+        "name": "get_user_info",
+        "description": "Retrieve details for a specific user by their unique identifier. Note that the provided function is in Python 3 syntax.",
+        "parameters": {
+            "type": "dict",
+            "required": [
+                "user_id"
+            ],
+            "properties": {
+                "user_id": {
+                "type": "integer",
+                "description": "The unique identifier of the user. It is used to fetch the specific user details from the database."
+            },
+            "special": {
+                "type": "string",
+                "description": "Any special information or parameters that need to be considered while fetching user details.",
+                "default": "none"
+                }
+            }
+        }
+    }
+]
+Should you decide to return the function call(s), Put it in the format of [func1(params_name=params_value, params_name2=params_value2...), func2(params)]
+NO other text MUST be included.<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+With the same response:
+
+[get_user_info(user_id=7890, special='black')]<|eot_id|>
+Note that the model’s response ends with an <|eot_id|> tag indicating end of turn.
+Llama 3.2 Vision models (11B/90B)
+Note: The Llama 3.2 multimodal models are not accessible from the European Union (EU). Please see the Llama 3.2 AUP and Llama FAQ page for more information.
+The Llama 3.2-Vision collection of multimodal large language models (LLMs) is a collection of pretrained and instruction-tuned image reasoning generative models in 11B and 90B sizes (text + images in / text out). The Llama 3.2-Vision-Instruct models are optimized for visual recognition, image reasoning, captioning, and answering general questions about an image.
+
+Model Card
+For comprehensive technical information about the Llama 3.2 Vision models, please see the official model card, located on GitHub.
+Vision Model Architecture
+The Llama vision models are a late-fusion architecture with cross-attention layers that process text tokens and image tokens (from the vision encoder) efficiently. To read more about the architecture refer to page 56 of the Llama 3 paper.
+Vision Model Inputs and Outputs
+The inputs to the vision model can be text + image or text-only. The output of the model is text-only.
+With text-only inputs, the Llama 3.2 Vision models are functionally the same as the Llama 3.1 Text models; this allows the Llama 3.2 Vision models to be a drop-in replacement for Llama 3.1 8B/70B with added image understanding capabilities.
+Prompt Template
+Special Tokens
+The vision model supports all the tokens available in the text-only models, along with a new special token <|image|> which represents the passed image.
+Supported Roles
+There are 4 different roles that are supported by Llama text models:
+
+system: Sets the context in which to interact with the AI model. It typically includes rules, guidelines, or necessary information that help the model respond effectively.
+user: Represents the human interacting with the model. It includes the inputs, commands, and questions to the model.
+ipython: A new role introduced in Llama 3.1. Semantically, this role means "tool". This role is used to mark messages with the output of a tool call when sent back to the model from the executor.
+assistant: Represents the response generated by the AI model based on the context provided in the system, ipython and user prompts.
+[system, assistant, user, ipython]
+Base Model Prompt
+The prompt to the base vision model consists of the <|image|> tag along with the text to continue generating
+<|begin_of_text|><|image|>If I had to write a haiku for this one
+Instruct Model Prompt
+The prompt to the Vision-Instruct model is similar to the Text-Instruct model, with the additional <|image|> tag if the input includes an image to reason about.
+<|begin_of_text|><|start_header_id|>user<|end_header_id|>
+
+<|image|>Describe this image in two
+sentences<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+
+Two things to note in the instruct model prompt:
+We don’t need a system prompt when passing an image to the model; the user prompt will contain the <|image|> tag and text query.
+The position of the <|image|> tag is important! The image immediately preceding a query is used to answer the query, make sure the text query follows the <|image|> tag. This is controlled by the cross-attention layer mask in the model.
+For more examples of the vision prompt template, please refer to vision_prompt_format.md in the meta-llama GitHub repository.
+Code Interpreter and Tool Calling
+With text-only inputs, the code interpreter and tool-calling capabilities of the Llama 3.2 Vision Models work exactly like their Llama 3.1 Text Model counterparts. You can use either the system or user prompts to provide the function definitions.
+Currently the vision models don’t support tool-calling with text+image inputs.
